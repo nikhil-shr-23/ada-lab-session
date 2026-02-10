@@ -3,20 +3,18 @@ import matplotlib.pyplot as plt
 from memory_profiler import memory_usage
 
 
-
-
-# O(1)
+# O(1) – Constant time
 def const_fn(a):
     return a[0]
 
-# O(n)
+# O(n) – Linear time
 def linear_fn(a):
     s = 0
     for x in a:
         s += x
     return s
 
-# O(n^2)
+# O(n^2) – Quadratic time
 def quad_fn(a):
     c = 0
     for i in a:
@@ -24,7 +22,7 @@ def quad_fn(a):
             c += 1
     return c
 
-# O(log n)
+# O(log n) – Logarithmic time
 def log_fn(n):
     c = 0
     while n > 1:
@@ -33,18 +31,20 @@ def log_fn(n):
     return c
 
 
-
+# Wrapper functions for memory_usage profiling
 def const_wrap(a): const_fn(a)
 def linear_wrap(a): linear_fn(a)
 def quad_wrap(a): quad_fn(a)
 def log_wrap(n): log_fn(n)
 
 
-
+# Input sizes
 try:
     sizes = input("Enter input sizes eg- 10,100,500,1000: ")
-    n = [int(i) for i in sizes.split(",")]
-except:
+    n = [int(i.strip()) for i in sizes.split(",")]
+    if not n:
+        raise ValueError
+except (ValueError, EOFError):
     n = [10, 100, 500, 1000]
 
 
@@ -55,39 +55,40 @@ m1, m2, m3, m4 = [], [], [], []
 for x in n:
     a = list(range(x))
 
-    # -O(1)
+    # --- O(1) ---
     start = time.perf_counter()
     const_fn(a)
     t1.append(time.perf_counter() - start)
 
-    mem = memory_usage((const_wrap, (a,)))
-    m1.append(max(mem) - min(mem))
+    mem = memory_usage((const_wrap, (a,)), max_usage=True)
+    m1.append(mem if isinstance(mem, (int, float)) else max(mem) - min(mem))
 
-    # - O(n)
+    # --- O(n) ---
     start = time.perf_counter()
     linear_fn(a)
     t2.append(time.perf_counter() - start)
 
-    mem = memory_usage((linear_wrap, (a,)))
-    m2.append(max(mem) - min(mem))
+    mem = memory_usage((linear_wrap, (a,)), max_usage=True)
+    m2.append(mem if isinstance(mem, (int, float)) else max(mem) - min(mem))
 
-    # - O(n^2)
+    # --- O(n^2) ---
     start = time.perf_counter()
     quad_fn(a)
     t3.append(time.perf_counter() - start)
 
-    mem = memory_usage((quad_wrap, (a,)))
-    m3.append(max(mem) - min(mem))
+    mem = memory_usage((quad_wrap, (a,)), max_usage=True)
+    m3.append(mem if isinstance(mem, (int, float)) else max(mem) - min(mem))
 
-    # - O(log n)
+    # --- O(log n) ---
     start = time.perf_counter()
     log_fn(x)
     t4.append(time.perf_counter() - start)
 
-    mem = memory_usage((log_wrap, (x,)))
-    m4.append(max(mem) - min(mem))
+    mem = memory_usage((log_wrap, (x,)), max_usage=True)
+    m4.append(mem if isinstance(mem, (int, float)) else max(mem) - min(mem))
 
 
+# --- Time Complexity Plot ---
 plt.figure()
 plt.plot(n, t1, marker='o', label='O(1)')
 plt.plot(n, t2, marker='o', label='O(n)')
@@ -97,10 +98,13 @@ plt.xlabel("Input Size")
 plt.ylabel("Time (seconds)")
 plt.title("Time Complexity Comparison")
 plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("question1-time.png", dpi=150)
 plt.show()
 
 
-
+# --- Space Complexity Plot ---
 plt.figure()
 plt.plot(n, m1, marker='o', label='O(1)')
 plt.plot(n, m2, marker='o', label='O(n)')
@@ -110,4 +114,7 @@ plt.xlabel("Input Size")
 plt.ylabel("Memory Used (MiB)")
 plt.title("Space Complexity using Memory Profiler")
 plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("question1-space.png", dpi=150)
 plt.show()
